@@ -147,7 +147,8 @@ class BaseTask(ABC):
         if len(aug_mask.shape)==3 and aug_mask.shape[0]==1:
             aug_mask = aug_mask.squeeze(0)
 
-        return aug_sample,aug_mask.astype(np.float)
+        # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+        return aug_sample,aug_mask.astype(float)
 
 
     @abstractmethod
@@ -526,7 +527,8 @@ class GaussIntensityChangeTask(BaseTask):
                        anomaly_intersect_fn: Callable[[npt.NDArray[float], npt.NDArray[float]], npt.NDArray[float]]) \
             -> npt.NDArray[float]:
 
-        anomaly_mask_copy = anomaly_mask.astype(np.float)
+        # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+        anomaly_mask_copy = anomaly_mask.astype(float)
         anomaly_patch_slices = get_patch_image_slices(anomaly_corner, anomaly_mask_copy.shape)
 
         texture = self.create_texture(sample.shape[1:])

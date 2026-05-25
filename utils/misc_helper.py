@@ -17,8 +17,12 @@ def map_func(storage, location):
 
 def create_logger(name, log_file, level=logging.INFO):
     log = logging.getLogger(name)
+    for handler in log.handlers:
+        handler.close()
+    log.handlers.clear()
     formatter = logging.Formatter(
-        "[%(asctime)s][%(filename)15s][line:%(lineno)4d][%(levelname)8s] %(message)s"
+        # Keep logger.log compact: no wall-clock training timestamp is written.
+        "[%(filename)15s][line:%(lineno)4d][%(levelname)8s] %(message)s"
     )
     fh = logging.FileHandler(log_file)
     fh.setFormatter(formatter)

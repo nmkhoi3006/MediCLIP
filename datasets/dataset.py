@@ -124,7 +124,8 @@ class ChexpertTestDataset(torch.utils.data.Dataset):
         info = self.data_to_iterate[idx]
         image_path = os.path.join(self.source,'images',info['filename'])
         image = PIL.Image.open(image_path).convert("RGB").resize((self.args.image_size,self.args.image_size),PIL.Image.Resampling.BILINEAR)
-        mask = np.zeros((self.args.image_size,self.args.image_size)).astype(np.float)
+        # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+        mask = np.zeros((self.args.image_size,self.args.image_size)).astype(float)
         image = self.transform_img(image)
         mask = torch.from_numpy(mask)
 
@@ -169,7 +170,8 @@ class BrainMRITestDataset(torch.utils.data.Dataset):
         info = self.data_to_iterate[idx]
         image_path = os.path.join(self.source,'images',info['filename'])
         image = PIL.Image.open(image_path).convert("RGB").resize((self.args.image_size,self.args.image_size),PIL.Image.Resampling.BILINEAR)
-        mask = np.zeros((self.args.image_size,self.args.image_size)).astype(np.float)
+        # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+        mask = np.zeros((self.args.image_size,self.args.image_size)).astype(float)
         image = self.transform_img(image)
         mask = torch.from_numpy(mask)
 
@@ -220,10 +222,12 @@ class BusiTestDataset(torch.utils.data.Dataset):
         if info.get("mask", None):
             mask = os.path.join(self.source,'images',info['mask'])
             mask = PIL.Image.open(mask).convert("L").resize((self.args.image_size,self.args.image_size),PIL.Image.Resampling.NEAREST)
-            mask = np.array(mask).astype(np.float)/255.0
+            # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+            mask = np.array(mask).astype(float)/255.0
             mask [mask!=0.0] = 1.0
         else:
-            mask = np.zeros((self.args.image_size,self.args.image_size)).astype(np.float)
+            # NumPy >=1.24 removed np.float, so use the builtin float dtype.
+            mask = np.zeros((self.args.image_size,self.args.image_size)).astype(float)
 
         image = self.transform_img(image)
         mask = torch.from_numpy(mask)

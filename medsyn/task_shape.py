@@ -6,10 +6,10 @@ from typing import Callable, List, Tuple
 import numpy as np
 import numpy.typing as npt
 from skimage.morphology import convex_hull_image
+from scipy.ndimage import rotate
 
 from .utils import accumulate_rotation, accumulate_scaling
 import math
-import imgaug.augmenters as iaa
 
 
 class PatchShapeMaker(ABC):
@@ -83,9 +83,14 @@ class PerlinPatchMaker(PatchShapeMaker):
         while True:
             perlin_noise = self.rand_perlin_2d_np((noise_size_x, noise_size_y), (perlin_scalex, perlin_scaley))
 
-            # apply affine transform
-            rot = iaa.Affine(rotate=(-90, 90))
-            perlin_noise = rot(image=perlin_noise)
+            # Replaces imgaug.Affine so the project can run with NumPy 2.x.
+            perlin_noise = rotate(
+                perlin_noise,
+                angle=np.random.uniform(-90, 90),
+                reshape=False,
+                order=1,
+                mode="nearest",
+            )
 
             # make a mask by applying threshold
             mask_noise = np.where(
@@ -97,7 +102,8 @@ class PerlinPatchMaker(PatchShapeMaker):
 
             if np.mean(mask_noise) >= self.perlin_min_size:
                 break
-        return mask_noise.astype(np.bool), None
+        # NumPy >=1.24 removed np.bool, so use the builtin bool dtype.
+        return mask_noise.astype(bool), None
 
 
     def get_patch_mask(self, dim_bounds: List[Tuple[int, int]], img_dims: np.ndarray) -> npt.NDArray[bool]:
