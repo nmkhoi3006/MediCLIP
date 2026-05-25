@@ -99,6 +99,8 @@ def main(args):
 
     test_dataloaders = {}
     best_record = {}
+    early_stop_patience = args.config.get('early_stop_patience', 15)
+    epochs_without_improvement = 0
 
     for test_dataset_name in args.config.test_datasets:
 
@@ -205,11 +207,25 @@ def main(args):
                         ))
 
             if save_flag:
+                epochs_without_improvement = 0
                 logger.info("save checkpoints in epoch: {}".format(epoch+1))
                 torch.save({
                         "adapter_state_dict": adapter.state_dict(),
                         "prompt_state_dict": prompt_maker.prompt_learner.state_dict(),
                     }, os.path.join(args.config.save_root, 'checkpoints_{}.pkl'.format(epoch + 1)))
+            else:
+                epochs_without_improvement += args.config.val_freq_epoch
+                logger.info(
+                    "early stopping counter: {}/{} epochs without improvement".format(
+                        epochs_without_improvement,
+                        early_stop_patience,
+                    )
+                )
+                if epochs_without_improvement >= early_stop_patience:
+                    logger.info(
+                        "early stopping triggered at epoch: {}".format(epoch+1)
+                    )
+                    break
 
 
 def train_one_epoch(
